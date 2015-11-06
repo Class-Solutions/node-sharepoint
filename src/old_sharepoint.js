@@ -1,4 +1,6 @@
-﻿'use strict';
+/// <reference path='../typings/node/node.d.ts' />
+
+'use strict';
 
 var fs = require('fs');
 var qs = require('querystring');
@@ -8,7 +10,7 @@ var https = require('https');
 var urlparse = require('url').parse;
 var samlRequestTemplate = fs.readFileSync(__dirname + '/SAML.xml', 'utf8');
 
-var buildSamlRequest = function (params) {
+var buildSamlRequest = function(params) {
     var key,
         saml = samlRequestTemplate;
 
@@ -19,23 +21,23 @@ var buildSamlRequest = function (params) {
     return saml;
 };
 
-var parseXml = function (xml, callback) {
+var parseXml = function(xml, callback) {
     var parser = new xml2js.Parser({
         emptyTag: ''  // use empty string as value when tag empty
     });
 
-    parser.on('end', function (js) {
+    parser.on('end', function(js) {
         callback && callback(js);
     });
 
     parser.parseString(xml);
 };
 
-var parseCookie = function (txt) {
+var parseCookie = function(txt) {
     var properties = txt.split('; ');
-    var cookie = {};
+    var cookie = { name: '', value: '' };
 
-    properties.forEach(function (property, index) {
+    properties.forEach(function(property, index) {
         var idx = property.indexOf('='),
             name = (idx > 0 ? property.substring(0, idx) : property),
             value = (idx > 0 ? property.substring(idx + 1) : undefined);
@@ -52,11 +54,11 @@ var parseCookie = function (txt) {
     return cookie;
 };
 
-var parseCookies = function (txts) {
+var parseCookies = function(txts) {
     var cookies = [];
 
     if (txts) {
-        txts.forEach(function (txt) {
+        txts.forEach(function(txt) {
             var cookie = parseCookie(txt);
             cookies.push(cookie)
         })
@@ -66,7 +68,7 @@ var parseCookies = function (txts) {
 }
 
 
-var getCookie = function (cookies, name) {
+var getCookie = function(cookies, name) {
     var cookie,
         i = 0,
         len = cookies.length;
@@ -99,27 +101,27 @@ function requestToken(params, callback) {
     };
 
 
-    var req = https.request(options, function (res) {
+    var req = https.request(options, function(res) {
         var xml = '';
 
         res.setEncoding('utf8');
-        res.on('data', function (chunk) {
+        res.on('data', function(chunk) {
             xml += chunk;
         })
 
-        res.on('end', function () {
+        res.on('end', function() {
 
-            parseXml(xml, function (js) {
+            parseXml(xml, function(js) {
 
                 // check for errors
-                if (js['S:Body']['S:Fault']) {
-                    var error = js['S:Body']['S:Fault']['S:Detail']['psf:error']['psf:internalerror']['psf:text'];
+                if (js['S:Envelope']['S:Body'][0] && js['S:Envelope']['S:Body'][0]['S:Fault']) {
+                    var error = js['S:Envelope']['S:Body'][0]['S:Fault'][0]['S:Detail']['psf:error']['psf:internalerror']['psf:text'];
                     callback(error);
                     return;
                 } 
 
                 // extract token
-                var token = js['S:Body']['wst:RequestSecurityTokenResponse']['wst:RequestedSecurityToken']['wsse:BinarySecurityToken']['#'];
+                var token = js['S:Envelope']['S:Body']['wst:RequestSecurityTokenResponse']['wst:RequestedSecurityToken']['wsse:BinarySecurityToken']['#'];
 
                 // Now we have the token, we need to submit it to SPO
                 submitToken({
@@ -152,15 +154,15 @@ function submitToken(params, callback) {
 
 
 
-    var req = protocol.request(options, function (res) {
+    var req = protocol.request(options, function(res) {
 
         var xml = '';
         res.setEncoding('utf8');
-        res.on('data', function (chunk) {
+        res.on('data', function(chunk) {
             xml += chunk;
         })
 
-        res.on('end', function () {
+        res.on('end', function() {
 
             var cookies = parseCookies(res.headers['set-cookie'])
 
@@ -185,7 +187,7 @@ function signin(username, password, callback) {
         endpoint: self.url.protocol + '//' + self.url.hostname + self.login
     }
 
-    requestToken(options, function (err, data) {
+    requestToken(options, function(err, data) {
 
         if (err) {
             callback(err);
@@ -235,18 +237,18 @@ function request(options, next) {
     // support for using https
     var protocol = (ssl ? https : http);
 
-    var req = protocol.request(req_options, function (res) {
+    var req = protocol.request(req_options, function(res) {
         //console.log('STATUS:', res.statusCode);
         //console.log('HEADERS:', res.headers);
        
 
         var res_data = '';
         res.setEncoding('utf8');
-        res.on('data', function (chunk) {
+        res.on('data', function(chunk) {
             //console.log('CHUNK:', chunk);
             res_data += chunk;
         });
-        res.on('end', function () {
+        res.on('end', function() {
             // if no callback is defined, we're done.
             if (!next) return;
 
@@ -353,10 +355,13 @@ function metadata(next) {
 }
 
 
-var SP = {};
+var SP = {
+    List: null,
+    RestService: null
+};
 
 // constructor for REST service
-SP.RestService = function (url) {
+SP.RestService = function(url) {
     this.url = urlparse(url);
     this.host = this.url.host;
     this.path = this.url.path;
@@ -387,7 +392,7 @@ SP.RestService.prototype = {
 
 
 // Constructor for SP List
-SP.List = function (service, name) {
+SP.List = function(service, name) {
     this.service = service
     this.name = name
 }
