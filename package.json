@@ -23,6 +23,7 @@
   },
   "bugs": "https://github.com/Class-Solutions/nodejs-sharepoint/issues",
   "dependencies": {
+    "lodash": "^3.10.1",
     "xml2js": ">= 0.0.1"
   },
   "devDependencies": {
