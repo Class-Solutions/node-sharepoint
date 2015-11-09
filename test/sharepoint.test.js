@@ -18,26 +18,26 @@ describe('Start Connection Test', function () {
 		it('should not be null', function () {
 			assert.notEqual(client, null);
 		});
-		// it('the client should connect', function (done) {
-		// 	this.timeout(30000);
-		// 	assert.doesNotThrow(
-		// 		function () {
-		// 			client.SignIn('ABC', 'HueHue', function (err, data) {
-		// 				assert.equal(err, null);
-		// 				done();
-		// 			});
-		// 		},
-		// 		function (error) {
-		// 			return done(error);
-		// 		});
-		// });
-		it('should return the $metadata from SharePoint',function(done){
+		it('the client should connect', function (done) {
 			this.timeout(30000);
-			var c = client.Metadata(function(err,data){
-				console.log(err);
-				console.log(data);
-				done();
-			});
+			assert.doesNotThrow(
+				function () {
+					client.SignIn('ABC', 'HueHue', function (err, data) {
+						assert.equal(err, null);
+						done();
+					});
+				},
+				function (error) {
+					return done(error);
+				});
 		});
+		// it('should return the $metadata from SharePoint',function(done){
+		// 	this.timeout(30000);
+		// 	var c = client.Metadata(function(err,data){
+		// 		console.log(err);
+		// 		console.log(data);
+		// 		done();
+		// 	});
+		// });
 	});
 });
