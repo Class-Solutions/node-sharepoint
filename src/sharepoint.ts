@@ -141,7 +141,8 @@ module SP {
                     'Accept': options.accept || 'application/json',
                     'Content-type': 'application/json',
                     'Cookie': 'FedAuth=' + this.FedAuth + '; rtFa=' + this.rtFa,
-                    'Content-length': req_data.length
+                    'Content-length': req_data.length,
+                    'If-Match': ''
                 }
             };
             // Include If-Match header if etag is specified
