@@ -1,5 +1,11 @@
 var assert = require('assert');
 
+// it('should connect',function(done){
+// 	this.timeout(50000);
+// 	var SP = require('../temp/ManualTests.js');
+// 	SP.connect(done);
+// });
+
 describe('Start Connection Test', function () {
 	var SP;
 	before(function () {
@@ -22,7 +28,7 @@ describe('Start Connection Test', function () {
 			this.timeout(30000);
 			assert.doesNotThrow(
 				function () {
-					client.SignIn('ABC', 'HueHue', function (err, data) {
+					client.SignIn('lucas.dev@class-solutions.com.br', 'Class@2015!', function (err, data) {
 						assert.equal(err, null);
 						done();
 					});
